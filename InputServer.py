@@ -1,9 +1,7 @@
 import json
-
+import socket
 class InputServer:
-    serverTcpSocket = "127.0.0.1"
-    port = 1024
-    listConnectedSocker = []
+
     def __int__(self, name, x, y, width, height):
         self.name = name
         self.x = x
@@ -12,21 +10,26 @@ class InputServer:
         self.height = height
 
     def initializ(self):
+        serverTcpSocket = "127.0.0.1"
+        port = 1024
         port += 1
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         if (server.connect_ex((serverTcpSocket, port)) == 0):
             InputServer.onError()
+            pass
         else:
             server.bind((serverTcpSocket, port))
             server.listen(5)
             client, address = server.accept()
+            return client
 
     def onNewSocket(self):
+        listConnectedSocker = []
         listConnectedSocker.append(self.name)
 
 
-    def onMessageRecived(self):
+    def onMessageRecived(self ,client):
 
         objectRecived = client.recv(1024) # cheniya hal 1024 : hiya buffer -> speed haja ki haka ?
 
