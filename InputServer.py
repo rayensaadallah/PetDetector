@@ -1,5 +1,5 @@
 import json
-
+import socket
 class InputServer:
     serverTcpSocket = "127.0.0.1"
     port = 1024
