@@ -7,9 +7,11 @@ np.random.seed(20)
 
 class ImageProcess :
     def __init__(self, configuration):
+
         self.configuration = configuration
 
     def onNewImage(self):
+
         camera = cv2.VideoCapture(0)  # 0 for webcam and 1 for USB camera or path file of the video
         count = 0
         while True:
@@ -38,9 +40,30 @@ class ImageProcess :
         ImageProcess.downloadModel(modelURL)
         ImageProcess.loadModel()
         ImageProcess.predictImage(imagePath)
+        ImageProcess.result()
+
+    def result(self, data):
+
+        return [petname, ]
+
+    def collisionDetection(self, data ):
+
+        nameIS = data[0]
+        xIS = data[1]
+        yIS = data[2]
+        widthIS = data[3]
+        heightIS = data[4]
+        if ( xmin > xIS + widthIS && xIS > xmin + width && ymax > yIS + heightIS && yIS > ymax + height) :
+            r = 1
+        else :
+            r = 0
+
+        return [r, petname, xmin, ymax, confidencezone]
+
 
 
     def readClasses(self, classesFilePath):
+
         with open(classesFilePath, 'r') as f:
             self.classesList = f.read().splitlines()
             # colors list
@@ -48,6 +71,7 @@ class ImageProcess :
             print(len(self.classesList), len(self.colorList))
 
     def downloadModel(self, modelURL):
+
         fileName = os.path.basename(modelURL)
         self.modelName = fileName[:fileName.index('.')]
         print(self.modelName)
@@ -56,6 +80,7 @@ class ImageProcess :
         get_file(fname=fileName, origin=modelURL, cache_dir=self.cacheDir, cache_subdir="checkpoint", extract=True)
 
     def loadModel(self):
+
         print("Loading Model" + self.modelName)
         tf.keras.backend.clear_session()
         self.model = tf.saved_model.load(
@@ -75,8 +100,7 @@ class ImageProcess :
 
         imH, imW, imC = image.shape
 
-        bboxIdx = tf.image.non_max_suppression(bboxs, classScores, max_output_size=15, iou_threshold=threshold,
-                                                       score_threshold=threshold)
+        bboxIdx = tf.image.non_max_suppression(bboxs, classScores, max_output_size=15, iou_threshold=threshold, score_threshold=threshold)
         print("creating boundig box ")
 
         if len(bboxIdx) != 0:
@@ -90,6 +114,13 @@ class ImageProcess :
                 ymin, xmin, ymax, xmax = bbox
                 xmin, xmax, ymin, ymax = (xmin * imW, xmax * imW, ymin * imH, ymax * imH)
                 xmin, xmax, ymin, ymax = int(xmin), int(xmax), int(ymin), int(ymax)
+
+                #method result
+                width = xmax - xmin
+                height = ymax - ymin
+
+
+                #method result
 
                 cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color=classColor, thickness=1)
                 cv2.putText(image, displayText, (xmin, ymin - 10), cv2.FONT_HERSHEY_PLAIN, 1, classColor, 2)
@@ -108,13 +139,14 @@ class ImageProcess :
         return image
 
     def predictImage(self, imagePath):
+
         image = cv2.imread(imagePath)
         bboxImage = self.createBoundigBox(image)
         cv2.imwrite(self.modelName + ".jpg", bboxImage)
-        cv2.imshow("Result", bboxImage)
+        #cv2.imshow("Result", bboxImage)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
+        return bboxImage
 
 
 
