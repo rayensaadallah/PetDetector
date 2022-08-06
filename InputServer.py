@@ -4,6 +4,8 @@ import schedule
 import time
 
 class InputServer:
+    listConnectedSocker = []
+    port = 1024
 
     def __int__(self, user, name, x, y, width, height):
         self.user = user
@@ -13,9 +15,9 @@ class InputServer:
         self.width = width
         self.height = height
 
-    def initializ(self):
+    def initializ(self,port):
         serverTcpSocket = "127.0.0.1"
-        port = 1024
+
         port += 1
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -25,12 +27,15 @@ class InputServer:
         else:
             server.bind((serverTcpSocket, port))
             server.listen(5)
+
             client, address = server.accept()
             return client
 
-    def onNewSocket(userName):
-        listConnectedSocker = []
-        listConnectedSocker.append(userName)
+    def onNewSocket(userName, listConnectedSocker):
+        if (userName not in listConnectedSocker):
+            listConnectedSocker.append(userName)
+        else:
+            InputServer.onError(3)
 
 
 
@@ -51,15 +56,18 @@ class InputServer:
 
 
 
-    def onError(errorNumber):
+    def onError(errorNumber, client):
         match errorNumber:
             case 0:
-                return "this port already used"
+                client.send(bytes("this port already used", "utf-8"))
             case 1:
-                return "server disconect"
+                client.send(bytes("server disconnected", "utf-8"))
+            case 2 :
+                client.send(bytes("invalid data", "utf-8"))
+            case 3 :
+                client.send(bytes("user already", "utf-8"))
             case default:
-                return "other Problem"
-
+                client.send(bytes("other Problem", "utf-8"))
 
 
     def processMessage(self, objectRecived):
@@ -71,7 +79,10 @@ class InputServer:
         width = dictObject["width"]
         height = dictObject["height"]
 
-        return [name, x, y, width, height]
+        if( (x < 0) or (y < 0) or (width < 0) or (height < 0)or (width > 1920) or (height > 1080) or (name == "") ):
+            InputServer.onError(2)
+        else:
+            return [name, x, y, width, height]
 
 
 
